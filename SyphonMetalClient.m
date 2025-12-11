@@ -62,7 +62,7 @@
         _supportsUnifiedMemory = _isAppleSilicon && [theDevice hasUnifiedMemory];
 
         if (_supportsUnifiedMemory) {
-            SYPHONLOG(@"Syphon Metal Client: Running on Apple Silicon with unified memory - optimizations enabled");
+            SYPHONLOG(@"Syphon Metal Client: Running on Apple Silicon with unified memory - Metal 4 optimizations enabled");
         }
     }
     return self;

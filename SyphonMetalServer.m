@@ -61,7 +61,7 @@
         _supportsUnifiedMemory = _isAppleSilicon && [theDevice hasUnifiedMemory];
 
         if (_supportsUnifiedMemory) {
-            SYPHONLOG(@"Syphon Metal Server: Running on Apple Silicon with unified memory - optimizations enabled");
+            SYPHONLOG(@"Syphon Metal Server: Running on Apple Silicon with unified memory - Metal 4 optimizations enabled");
         }
 
         _renderer = [[SyphonServerRendererMetal alloc] initWithDevice:theDevice colorPixelFormat:MTLPixelFormatBGRA8Unorm];

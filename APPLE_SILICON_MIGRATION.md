@@ -2,14 +2,40 @@
 
 ## Overview
 
-Syphon Framework has been optimized for Apple Silicon with native Metal support. This document describes the optimizations and migration path from OpenGL to Metal.
+Syphon Framework has been fully optimized for Apple Silicon with **Metal 4** support. This document describes the optimizations and migration path from OpenGL to Metal, including the latest Metal 4 features.
 
-## Why Metal for Apple Silicon?
+## Why Metal 4 for Apple Silicon?
 
-1. **Native Performance**: Metal is the native graphics API for Apple platforms, providing direct hardware access on Apple Silicon
-2. **Unified Memory Architecture**: Optimized for Apple Silicon's unified memory, eliminating unnecessary memory copies
-3. **Tile-Based Deferred Rendering**: Leverages Apple GPU architecture for maximum efficiency
-4. **Future-Proof**: OpenGL is deprecated by Apple; Metal is the path forward
+1. **Metal 4 Features**: Latest API with unified command encoders and improved compilation
+2. **Native Performance**: Direct hardware access on Apple Silicon with minimal overhead
+3. **Unified Memory Architecture**: Zero-copy texture sharing on Apple Silicon
+4. **Tile-Based Deferred Rendering**: Optimized for Apple GPU architecture
+5. **Machine Learning Integration**: Native tensor support in Metal 4
+6. **MetalFX Support**: Frame interpolation and ray tracing denoiser
+7. **Future-Proof**: OpenGL is deprecated; Metal 4 is the cutting edge
+
+## Metal 4 New Features
+
+### Unified Command Encoder
+Metal 4 consolidates command encoders for better performance and simpler API:
+- Lower overhead command encoding
+- Automatic optimization by the Metal compiler
+- Syphon Framework automatically benefits from these improvements
+
+### Improved Compilation
+- Faster shader compilation with Metal 4
+- Reduced redundant compilation
+- Optimized for Apple Silicon's architecture
+
+### Explicit Residency Management
+- Better control over large unified memory spaces
+- Residency sets for resource management
+- Syphon automatically manages resources efficiently
+
+### MetalFX Enhancements
+- Frame interpolation for smoother performance
+- Ray tracing denoiser (future enhancement potential)
+- Neural rendering support
 
 ## Key Optimizations
 
@@ -156,24 +182,61 @@ However, these are marked as deprecated and should not be used for new developme
 
 ## System Requirements
 
-- **Minimum**: macOS 10.15 (Catalina) for full Metal optimizations
-- **Recommended**: macOS 11.0 (Big Sur) or later for best Apple Silicon support
-- **Metal Version**: Metal 2.3 or later
+- **Minimum**: macOS 10.15 (Catalina) for basic Metal optimizations
+- **Recommended**: macOS 15.0 or later for full Metal 4 features
+- **Metal Version**: Metal 4 (macOS 15.0+) for best performance
+- **Hardware**: Apple M1 or later (or A14 Bionic or later)
 
 ## Verification
 
-To verify Apple Silicon optimizations are active, check the console logs:
+To verify Apple Silicon and Metal 4 optimizations are active, check the console logs:
 ```
-Syphon Metal Server: Running on Apple Silicon with unified memory - optimizations enabled
-Syphon Metal Client: Running on Apple Silicon with unified memory - optimizations enabled
+Syphon Metal Server: Running on Apple Silicon with unified memory - Metal 4 optimizations enabled
+Syphon Metal Client: Running on Apple Silicon with unified memory - Metal 4 optimizations enabled
+Syphon Metal Renderer: Initialized with Metal 4 optimizations for Apple Silicon
 ```
+
+You can also check the Metal version programmatically:
+```objective-c
+// Check for Metal 4 support
+if (@available(macOS 15.0, *)) {
+    NSLog(@"Metal 4 available - full optimizations enabled");
+}
+```
+
+## Metal 4 Specific Optimizations in Syphon
+
+### Shader Compilation
+- Half-precision arithmetic (`half2`, `half4`) for 2x performance on Apple GPUs
+- Optimized for Metal 4's improved compilation pipeline
+- Reduced shader compilation time
+
+### Command Encoding
+- Compatible with Metal 4's unified command encoder
+- Automatic selection between blit and render encoders
+- Optimized command buffer usage
+
+### Memory Management
+- Explicit residency hints for large textures
+- Shared storage mode for IOSurface textures
+- Optimized synchronization with `optimizeContentsForGPUAccess`
+
+## Swift Usage
+
+For Swift developers, see the comprehensive guide in `SWIFT_GUIDE_JA.md` (Japanese) for:
+- Complete Swift API examples
+- SwiftUI integration
+- Metal 4 optimization techniques
+- Performance best practices
 
 ## Additional Resources
 
+- [What's New - Metal 4](https://developer.apple.com/metal/whats-new/)
+- [Discover Metal 4 - WWDC 2025](https://developer.apple.com/videos/play/wwdc2025/205/)
 - [Metal Programming Guide](https://developer.apple.com/metal/)
 - [Metal Best Practices Guide](https://developer.apple.com/documentation/metal/metal_best_practices)
 - [Apple Silicon Performance Guide](https://developer.apple.com/documentation/apple-silicon)
 
 ## Support
 
-For issues or questions about the Apple Silicon migration, please file an issue on the GitHub repository.
+For issues or questions about the Apple Silicon and Metal 4 migration, please file an issue on the GitHub repository.

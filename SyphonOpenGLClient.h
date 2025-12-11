@@ -14,7 +14,7 @@
     * Redistributions in binary form must reproduce the above copyright
     notice, this list of conditions and the following disclaimer in the
     documentation and/or other materials provided with the distribution.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,6 +27,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+// IMPORTANT: OpenGL is deprecated on macOS
+// For new projects and Apple Silicon, use SyphonMetalClient instead
+// This class is provided for compatibility with existing OpenGL-based applications
+//
+
 #import <Foundation/Foundation.h>
 #import <OpenGL/OpenGL.h>
 #import <Syphon/SyphonClientBase.h>
@@ -35,14 +41,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/*! 
+/*!
  SyphonOpenGLClient makes available frames from a remote SyphonServer. A client is created from a NSDictionary which describes the server. Typically this is obtained from the shared SyphonServerDirectory, or one of Syphon's notifications.
- 
+
+ **DEPRECATED:** OpenGL is deprecated on macOS. For new projects and optimal performance on Apple Silicon,
+ use `SyphonMetalClient` instead. This class is maintained for compatibility with existing OpenGL applications.
+
  SyphonOpenGLClient allows for lazy drawing by the use of a new-frame-handler. Using a handler you can perform drawing without using a timer or polling, achieving frame-accuracy with the minimum of overhead. Alternatively, if your application uses a traditional display link or timer, you can use the hasNewFrame property to make decisions about work you may need to do. Irrespective of the presence of new frames, you can draw with a SyphonOpenGLClient at any time.
- 
+
  It is safe to access instances of this class across threads, with the usual limitatiions related to OpenGL. The calls to SyphonOpenGLClient which may cause work to be done in a GL context are: -newFrameImage, -stop and -release.
  */
-
+API_DEPRECATED("Use SyphonMetalClient for new projects and Apple Silicon optimization", macos(10.6, API_TO_BE_DEPRECATED))
 @interface SyphonOpenGLClient : SyphonClientBase
 
 /*! 

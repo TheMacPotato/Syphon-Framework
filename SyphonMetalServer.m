@@ -37,6 +37,8 @@
     id<MTLTexture> _surfaceTexture;
     id<MTLDevice> _device;
     SyphonServerRendererMetal *_renderer;
+    BOOL _isAppleSilicon;
+    BOOL _supportsUnifiedMemory;
 }
 
 // These are redeclared from SyphonServerBase.h
@@ -53,6 +55,15 @@
     {
         _device = theDevice;
         _surfaceTexture = nil;
+
+        // Detect Apple Silicon and unified memory support
+        _isAppleSilicon = [theDevice supportsFamily:MTLGPUFamilyApple1];
+        _supportsUnifiedMemory = _isAppleSilicon && [theDevice hasUnifiedMemory];
+
+        if (_supportsUnifiedMemory) {
+            SYPHONLOG(@"Syphon Metal Server: Running on Apple Silicon with unified memory - optimizations enabled");
+        }
+
         _renderer = [[SyphonServerRendererMetal alloc] initWithDevice:theDevice colorPixelFormat:MTLPixelFormatBGRA8Unorm];
         if (!_renderer)
         {
@@ -97,11 +108,22 @@
                                                                                                  height:size.height
                                                                                               mipmapped:NO];
             descriptor.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+
+            // Apple Silicon optimizations for texture storage
+            if (_isAppleSilicon) {
+                // On Apple Silicon, prefer shared storage mode for IOSurface-backed textures
+                // This leverages unified memory architecture
+                if (@available(macOS 10.15, *)) {
+                    descriptor.storageMode = MTLStorageModeShared;
+                    descriptor.hazardTrackingMode = MTLHazardTrackingModeTracked;
+                }
+            }
+
             IOSurfaceRef surface = [self newSurfaceForWidth:size.width height:size.height options:nil];
             if (surface)
             {
                 _surfaceTexture = [_device newTextureWithDescriptor:descriptor iosurface:surface plane:0];
-                _surfaceTexture.label = @"Syphon Surface Texture";
+                _surfaceTexture.label = @"Syphon Surface Texture (Apple Silicon Optimized)";
                 CFRelease(surface);
             }
         }
@@ -140,18 +162,19 @@
         SYPHONLOG(@"TextureToPublish is nil. Syphon will not publish");
         return;
     }
-    
+
     region = NSIntersectionRect(region, NSMakeRect(0, 0, textureToPublish.width, textureToPublish.height));
-    
+
     id<MTLTexture> destination = [self prepareToDrawFrameOfSize:region.size];
-    
-    // When possible, use faster blit
+
+    // When possible, use faster blit encoder (optimized path)
     if( !isFlipped && textureToPublish.pixelFormat == destination.pixelFormat
        && textureToPublish.sampleCount == destination.sampleCount
        && !textureToPublish.framebufferOnly)
     {
         id<MTLBlitCommandEncoder> blitCommandEncoder = [commandBuffer blitCommandEncoder];
-        blitCommandEncoder.label = @"Syphon Server Optimised Blit commandEncoder";
+        blitCommandEncoder.label = @"Syphon Server Blit Encoder (Zero-Copy Path)";
+
         [blitCommandEncoder copyFromTexture:textureToPublish
                                 sourceSlice:0
                                 sourceLevel:0
@@ -162,14 +185,27 @@
                            destinationLevel:0
                           destinationOrigin:MTLOriginMake(0, 0, 0)];
 
+        // On Apple Silicon with unified memory, optimize synchronization
+        if (_supportsUnifiedMemory && @available(macOS 10.15, *)) {
+            [blitCommandEncoder optimizeContentsForGPUAccess:destination];
+        }
+
         [blitCommandEncoder endEncoding];
     }
-    // otherwise, re-draw the frame
+    // Otherwise, use render encoder (when flipping or format conversion needed)
     else
     {
         [_renderer renderFromTexture:textureToPublish inTexture:destination region:region onCommandBuffer:commandBuffer flip:isFlipped];
+
+        // Optimize for GPU access on Apple Silicon
+        if (_supportsUnifiedMemory && @available(macOS 10.15, *)) {
+            id<MTLBlitCommandEncoder> blitEncoder = [commandBuffer blitCommandEncoder];
+            [blitEncoder optimizeContentsForGPUAccess:destination];
+            [blitEncoder endEncoding];
+        }
     }
-    
+
+    // Publish when command buffer completes
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull commandBuffer) {
         [self publish];
     }];

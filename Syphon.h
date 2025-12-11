@@ -27,15 +27,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+//
+// Syphon Framework - Optimized for Apple Silicon
+//
+// For new projects, use the Metal API for best performance on Apple Silicon:
+// - SyphonMetalServer and SyphonMetalClient provide native Metal integration
+// - Optimized for unified memory architecture on Apple Silicon
+// - Leverages tile-based deferred rendering for maximum efficiency
+//
+// OpenGL API is maintained for compatibility with existing applications,
+// but is deprecated by Apple and not recommended for new development.
+//
+
+// Server Directory (for discovering available Syphon servers)
 #import <Syphon/SyphonServerDirectory.h>
+
+// Metal API (Recommended for new projects and Apple Silicon)
 #import <Syphon/SyphonMetalServer.h>
 #import <Syphon/SyphonMetalClient.h>
+
+// OpenGL API (Maintained for compatibility, deprecated by Apple)
 #import <Syphon/SyphonOpenGLServer.h>
 #import <Syphon/SyphonOpenGLClient.h>
 #import <Syphon/SyphonOpenGLImage.h>
 
 /*
- Deprecated headers
+ Deprecated headers (for backward compatibility)
  */
 #import <Syphon/SyphonServer.h>
 #import <Syphon/SyphonClient.h>

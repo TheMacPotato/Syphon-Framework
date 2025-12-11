@@ -4,17 +4,17 @@
 
      Copyright 2010-2011 bangnoise (Tom Butterworth) & vade (Anton Marini).
      All rights reserved.
-     
+
      Redistribution and use in source and binary forms, with or without
      modification, are permitted provided that the following conditions are met:
-     
+
      * Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-     
+
      * Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in the
      documentation and/or other materials provided with the distribution.
-     
+
      THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
      ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,6 +26,12 @@
      (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
      SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+//
+// IMPORTANT: OpenGL is deprecated on macOS
+// For new projects and Apple Silicon, use SyphonMetalServer instead
+// This class is provided for compatibility with existing OpenGL-based applications
+//
 
 #import <Foundation/Foundation.h>
 #import <OpenGL/OpenGL.h>
@@ -61,13 +67,17 @@ extern NSString * const SyphonServerOptionStencilBufferResolution;
 
 /*!
  A server handles the publishing of frames from one video source to any number of clients.
- 
+
+ **DEPRECATED:** OpenGL is deprecated on macOS. For new projects and optimal performance on Apple Silicon,
+ use `SyphonMetalServer` instead. This class is maintained for compatibility with existing OpenGL applications.
+
  Frames can be published either by passing in an existing OpenGL texture, or by binding the server's FBO, drawing using OpenGL calls, then calling the ``unbindAndPublish`` method.
- 
+
  Each server represents one video output for your application. If your application produces several video outputs, then they should each have their own server. If your application might have multiple servers running, you should name each server to aid identification by users.
- 
+
  It is safe to access instances of this class across threads, except for those calls related to OpenGL: a call to ``bindToDrawFrameOfSize:`` must have returned before a call is made to ``unbindAndPublish``, and these methods must be paired and called in order. You should not call the ``stop`` method while the FBO is bound.
  */
+API_DEPRECATED("Use SyphonMetalServer for new projects and Apple Silicon optimization", macos(10.6, API_TO_BE_DEPRECATED))
 @interface SyphonOpenGLServer : SyphonServerBase
 
 /*!

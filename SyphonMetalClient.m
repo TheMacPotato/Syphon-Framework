@@ -38,6 +38,8 @@
     id<MTLTexture>  _frame;
     id<MTLDevice>   _device;
     atomic_bool     _frameValid;
+    BOOL            _isAppleSilicon;
+    BOOL            _supportsUnifiedMemory;
 }
 
 @dynamic isValid, serverDescription, hasNewFrame;
@@ -54,6 +56,14 @@
         _threadLock = OS_UNFAIR_LOCK_INIT;
         _frame = nil;
         atomic_store(&_frameValid, false);
+
+        // Detect Apple Silicon and unified memory support for optimizations
+        _isAppleSilicon = [theDevice supportsFamily:MTLGPUFamilyApple1];
+        _supportsUnifiedMemory = _isAppleSilicon && [theDevice hasUnifiedMemory];
+
+        if (_supportsUnifiedMemory) {
+            SYPHONLOG(@"Syphon Metal Client: Running on Apple Silicon with unified memory - Metal 4 optimizations enabled");
+        }
     }
     return self;
 }
@@ -95,12 +105,31 @@
         IOSurfaceRef surface = [self newSurface];
         if (surface != nil)
         {
-            MTLTextureDescriptor* descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:IOSurfaceGetWidth(surface) height:IOSurfaceGetHeight(surface) mipmapped:NO];
+            MTLTextureDescriptor* descriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                                  width:IOSurfaceGetWidth(surface)
+                                                                                                 height:IOSurfaceGetHeight(surface)
+                                                                                              mipmapped:NO];
+
+            // Apple Silicon optimizations
+            if (_isAppleSilicon) {
+                // Use shared storage mode for IOSurface textures on Apple Silicon
+                // This leverages unified memory and avoids unnecessary copies
+                if (@available(macOS 10.15, *)) {
+                    descriptor.storageMode = MTLStorageModeShared;
+                    descriptor.hazardTrackingMode = MTLHazardTrackingModeTracked;
+                }
+                // Enable optimized CPU cache modes for unified memory
+                descriptor.cpuCacheMode = MTLCPUCacheModeDefaultCache;
+            }
+
+            descriptor.usage = MTLTextureUsageShaderRead;
+
             _frame = [_device newTextureWithDescriptor:descriptor iosurface:surface plane:0];
+            _frame.label = @"Syphon Client Frame (Apple Silicon Optimized)";
 
             CFRelease(surface);
         }
-        
+
         atomic_store(&_frameValid, true);
     }
 

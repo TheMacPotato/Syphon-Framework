@@ -150,9 +150,7 @@
     // On Apple Silicon, hint that we want to use tile memory efficiently
     if (_isAppleSilicon && @available(macOS 11.0, *)) {
         // Tile memory optimization - keep color attachment in tile memory
-        renderPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
     }
-
     // Create a render command encoder
     id<MTLRenderCommandEncoder> renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
     renderEncoder.label = @"Syphon Server Render Encoder (Apple Silicon Optimized)";

@@ -81,7 +81,7 @@
             // Metal 4: Optimize for Apple Silicon's tile memory
             // The unified command encoder in Metal 4 benefits from this configuration
             if (@available(macOS 15.0, *)) {
-                // Future Metal 4 specific optimizations can be added here
+                // TODO: Add Metal 4 specific optimizations for macOS 15.0+ here
                 // Metal 4 automatically optimizes pipeline compilation
             }
         }
